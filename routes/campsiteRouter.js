@@ -1,21 +1,29 @@
 const express = require('express');
 const campsiteRouter = express.Router();
+const Campsite = require('../models/campsite');
 
 
 campsiteRouter.route('/')
 
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Campsite.find()
+    .then(campsites => {
+        res.StatusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(campsites);
+    })
+    .catch(err => next(err));
 })
 
-.get((req, res) => {
-    res.end('Will send all the campsites to you');
-})
-
-.post((req, res) => {
-    res.end(`Will add the campsite: ${req.body.name} with description: ${req.body.description}`);
+.post((req, res, next) => {
+    Campsite.create(req.body)
+    .then(campsite => {
+        console.log('Campsite Created ', campsite);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(campsite);
+    })
+    .catch(err => next(err));
 })
 
 .put((req, res) => {
@@ -23,21 +31,29 @@ campsiteRouter.route('/')
     res.end('PUT operation not supported on /campsites');
 })
 
-.delete((req, res) => {
-    res.end('Deleting all campsites')
+.delete((req, res, next) => {
+    Campsite.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 
 campsiteRouter.route('/:campsiteId')
 
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
 
-.get((req, res) => {
-    res.end(`Will send details of the camnpsite: ${req.params.campsiteId}`);
+
+.get((req, res, next) => {
+    Campsite.findById(req.params.campsiteId)
+    .then(campsite => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(campsite);
+    })
+    .catch(err => next(err));
 })
 
 .post((req, res) => {
@@ -45,14 +61,29 @@ campsiteRouter.route('/:campsiteId')
     res.end('POST operation not supported on /campsites');
 })
 
-.put((req, res) => {
-    res.end(`Updating campsite with new name: ${req.body.name} 
-    and description: ${req.body.description}`);
+.put((req, res, next) => {
+    Campsite.findByIdAndUpdate(req.params.campsiteId, {
+        $set: req.body
+    }, { new: true})
+    .then(campsite => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(campsite);
+    })
+    .catch(err => next(err));    
 })
 
-.delete((req, res) => {
-    res.end(`Deleting a campsite with id: ${req.params.campsiteId}`)
-});
+
+.delete((req, res, next) => {
+    Campsite.findByIdAndDelete(req.params.campsiteId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));    
+})
+   
 
 
 module.exports = campsiteRouter;
